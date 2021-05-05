@@ -8,7 +8,7 @@ from telegram.ext import (
     CallbackContext,
 )
 
-updater = Updater(token='1706319949:AAHQ5JvkyUWxF0DSqT7O2OBj79ID8NGFsKg', use_context=True)
+updater = Updater(token, use_context=True)
 dispatcher = updater.dispatcher
 
 all_tasks = [
@@ -105,5 +105,9 @@ def unknown(update, context):
     dispatcher.add_handler(unknown_handler)
 
 
+def main() -> None:
+    updater =Updater(token)
+
+
 if __name__ == '__main__':
-    updater.start_polling()
+    main()
