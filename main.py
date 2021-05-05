@@ -7,7 +7,8 @@ from telegram.ext import (
     ConversationHandler,
     CallbackContext,
 )
-updater = Updater(token = '1706319949:AAHQ5JvkyUWxF0DSqT7O2OBj79ID8NGFsKg', use_context = True)
+
+updater = Updater(token='1706319949:AAHQ5JvkyUWxF0DSqT7O2OBj79ID8NGFsKg', use_context=True)
 dispatcher = updater.dispatcher
 
 all_tasks = [
@@ -51,37 +52,58 @@ all_tasks = [
 ]
 
 import logging
-logging.basicConfig(format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                     level = logging.INFO)
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
-def start(update, context):
-    context.bot.send_message(chat_id = update.effective_chat.id, text = 'Привет! Я бот для подготовки к ЕГЭ по профильной математике. Здесь можно просматривать задания из разных вариантов и тренироваться их выполнять. Напиши /cancel, чтобы остановить бота')
-
-start_handler = CommandHandler('start', start)
-dispatcher.add_handler(start_handler)
+MODE = 0
 
 
-def echo(update, context):
-    context.bot.send_message(chat_id = update.effective_chat.id, text = update.message.text)
+def start(update: Update, _: CallbackContext) -> int:
+    reply_keyboard = [['Решение задания', 'Решение варианта']]
 
-echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
-dispatcher.add_handler(echo_handler)
+    update.message.reply_text(
+        'Привет! Я бот для подготовки к ЕГЭ по профильной математике. Здесь можно просматривать задания из разных вариантов и тренироваться их выполнять. Напиши /cancel, чтобы остановить бота',
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+    )
+
+    return MODE
+
+def mode(update: Update, _: CallbackContext) -> int:
+    user = update.message.from_user
+    logger.info(user.first_name, update.message.text)
+    update.message.reply_text(
+        'I see! Please send me a photo of yourself, '
+        'so I know what you look like, or send /skip if you don\'t want to.',
+        reply_markup=ReplyKeyboardRemove(),
+    )
+
+
+def task(update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
+
+
+task_handler = CommandHandler('task', task)
+dispatcher.add_handler(task_handler)
 
 
 def caps(update, context):
     text_caps = ' '.join(context.args).upper()
-    context.bot.send_message(chat_id = update.effective_chat.id, text = text_caps)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=text_caps)
+
 
 caps_handler = CommandHandler('caps', caps)
 dispatcher.add_handler(caps_handler)
 
+
 def unknown(update, context):
-    context.bot.send_message(chat_id = update.effective_chat.id, text = 'Ничего не понятно, выйди и зайди нормально')
+    context.bot.send_message(chat_id=update.effective_chat.id, text='Ничего не понятно, выйди и зайди нормально')
 
     unknown_handler = MessageHandler(Filters.command, unknown)
     dispatcher.add_handler(unknown_handler)
+
 
 if __name__ == '__main__':
     updater.start_polling()

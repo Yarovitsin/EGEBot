@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../EGE Telegram bot/.idea/EGE Telegram bot.iml" filepath="$PROJECT_DIR$/../EGE Telegram bot/.idea/EGE Telegram bot.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/EGEBot.iml" filepath="$PROJECT_DIR$/.idea/EGEBot.iml" />
     </modules>
   </component>
