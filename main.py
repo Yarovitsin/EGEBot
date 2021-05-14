@@ -58,13 +58,19 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-MODE, TYPING_REPLY, TYPING_CHOICE = range(3)
+MODE, TYPING_REPLY, CHOOSING_TASK = range(3)
 
 mode_keyboard = [['Решение задания', 'Решение варианта']]
+variant_keyboard = [['1', '2']]
+task_keyboard = [
+    ['1', '2', '3', '4'],
+    ['5', '6', '7', '8'],
+    ['9', '10', '11', '12'],
+]
 
-markup = ReplyKeyboardMarkup(mode_keyboard, one_time_keyboard=True)
 
 def start(update: Update, _: CallbackContext) -> int:
+    markup = ReplyKeyboardMarkup(mode_keyboard, one_time_keyboard=True)
     update.message.reply_text(
         'Привет! Я бот для подготовки к ЕГЭ по профильной математике. Здесь можно просматривать задания из разных вариантов и тренироваться их выполнять. Напиши /cancel, чтобы остановить бота',
         reply_markup=markup
@@ -72,22 +78,21 @@ def start(update: Update, _: CallbackContext) -> int:
 
     return MODE
 
-def mode(update: Update, _: CallbackContext) -> int:
-    user = update.message.from_user
-    logger.info(user.first_name, update.message.text)
+def task_1(update: Update, _: CallbackContext) -> int:
+    markup = ReplyKeyboardMarkup(variant_keyboard, one_time_keyboard=True)
     update.message.reply_text(
-        'I see! Please send me a photo of yourself, '
-        'so I know what you look like, or send /skip if you don\'t want to.',
-        reply_markup=ReplyKeyboardRemove(),
+        'Выбери вариант',
+        reply_markup=markup,
     )
 
+    return CHOOSING_TASK
 
-def task(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
-
-
-task_handler = CommandHandler('task', task)
-dispatcher.add_handler(task_handler)
+def task_2(update: Update, _: CallbackContext):
+    markup = ReplyKeyboardMarkup(task_keyboard, one_time_keyboard=True)
+    update.message.reply_text(
+        'Выбери задание',
+        reply_markup=markup,
+    )
 
 
 def caps(update, context):
@@ -113,10 +118,14 @@ def main() -> None:
         states={
 
             MODE: [
-                MessageHandler(
-                    Filters.regex('^(Решение задания|Решение варианта)$'), mode
-                )
+                MessageHandler(Filters.regex('^Решение задания$'), task_1),
+                MessageHandler(Filters.regex('^Решение варианта$'), task_1),
             ],
+
+            CHOOSING_TASK: [
+                MessageHandler(Filters.text, task_2)
+            ],
+
             TYPING_REPLY: [
                 MessageHandler(
                     Filters.text & ~(Filters.command | Filters.regex('^Done$')),
