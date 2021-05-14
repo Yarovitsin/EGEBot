@@ -8,7 +8,7 @@ from telegram.ext import (
     CallbackContext,
 )
 
-updater = Updater(token = '1706319949:AAHQ5JvkyUWxF0DSqT7O2OBj79ID8NGFsKg', use_context=True)
+updater = Updater(token = '1706319949:AAH1LW5TWSImNumuNSOCf8IUFpibhx5FXcI', use_context=True)
 dispatcher = updater.dispatcher
 
 all_tasks = [
@@ -58,15 +58,16 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-MODE = 0
+MODE, TYPING_REPLY, TYPING_CHOICE = range(3)
 
+mode_keyboard = [['Решение задания', 'Решение варианта']]
+
+markup = ReplyKeyboardMarkup(mode_keyboard, one_time_keyboard=True)
 
 def start(update: Update, _: CallbackContext) -> int:
-    reply_keyboard = [['Решение задания', 'Решение варианта']]
-
     update.message.reply_text(
         'Привет! Я бот для подготовки к ЕГЭ по профильной математике. Здесь можно просматривать задания из разных вариантов и тренироваться их выполнять. Напиши /cancel, чтобы остановить бота',
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+        reply_markup=markup
     )
 
     return MODE
@@ -106,9 +107,25 @@ def unknown(update, context):
 
 
 def main() -> None:
-    updater = Updater(token)
 
-    dispatcher = updater.dispatcher
+    conv_handler = ConversationHandler(
+        entry_points = [CommandHandler('start', start)],
+        states={
+
+            MODE: [
+                MessageHandler(
+                    Filters.regex('^(Решение задания|Решение варианта)$'), mode
+                )
+            ],
+            TYPING_REPLY: [
+                MessageHandler(
+                    Filters.text & ~(Filters.command | Filters.regex('^Done$')),
+                    caps,
+                )
+            ],
+        },
+        fallbacks=[MessageHandler(Filters.regex('^Done$'), unknown)],
+    )
 
     dispatcher.add_handler(conv_handler)
 
